@@ -9,8 +9,8 @@ import itertools
 from multiprocessing import Pool
 import numpy as np
 import os
-from os import path
 import psutil
+import sys
 
 from myutil import printmem, starstarmap
 
@@ -24,7 +24,7 @@ class Sache(object):
 
     def __init__(self, **kwargs):
         """Load a Sachet from disk"""
-        if path.exists(self._resolve_filename(**kwargs)):
+        if os.path.exists(self._resolve_filename(**kwargs)):
             return self._load(**kwargs)
         return None
 
@@ -40,7 +40,7 @@ class Sache(object):
 
     @classmethod
     def _resolve_filename(cls, **kwargs):
-        return path.join(cls.STORE, cls.FNAME_TEMPLATE.format(**kwargs))
+        return os.path.join(cls.STORE, cls.FNAME_TEMPLATE.format(**kwargs))
 
     @classmethod
     def _refresh(cls, clobber=False, dry_run=False, **kwargs):
@@ -49,7 +49,7 @@ class Sache(object):
 
         fname = cls._resolve_filename(**kwargs)
 
-        if path.exists(fname) and not clobber:
+        if os.path.exists(fname) and not clobber:
             print("Skipping, will not clobber", fname)
             return
         if dry_run:
@@ -115,6 +115,9 @@ module exposing global variables: Sachet, REQUESTS."""
     parser.add_argument('-n', type=int, default=1,
                         help="Number of parallel workers for Python multiprocessing Pool")
     args = parser.parse_args()
+
+    # allows sache.py to be placed anywhere w.r.t. cache schema, and vice versa
+    sys.path.append(os.path.dirname(os.path.abspath(args.module)))
 
     # this pattern is https://en.wikipedia.org/wiki/Dependency_injection
     modulename = args.module
