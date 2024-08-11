@@ -10,6 +10,7 @@ class Sachet(Sache):
 
     STORE = "./dat"
 
+    # using keys 'compress', 'clobber', or 'dry_run' will break code
     FNAME_TEMPLATE = "{runid:s}_{species:s}_n{step:06d}.npz"
 
     @classmethod

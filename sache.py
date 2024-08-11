@@ -43,7 +43,7 @@ class Sache(object):
         return os.path.join(cls.STORE, cls.FNAME_TEMPLATE.format(**kwargs))
 
     @classmethod
-    def _refresh(cls, clobber=False, dry_run=False, **kwargs):
+    def _refresh(cls, compress=False, clobber=False, dry_run=False, **kwargs):
         """Wrapper script for multiprocessing, must declare at module level"""
         started = datetime.now()
 
@@ -59,7 +59,10 @@ class Sache(object):
         print("Creating", fname)
 
         out = cls._make(**kwargs)
-        np.savez_compressed(fname, **out)
+        if compress:
+            np.savez_compressed(fname, **out)
+        else:
+            np.savez(fname, **out)
 
         print("Done", fname, "elapsed", datetime.now()-started)
 
@@ -112,6 +115,8 @@ module exposing global variables: Sachet, REQUESTS."""
                         help="Overwrite existing files on disk")
     parser.add_argument('--dry-run', action='store_true',
                         help="Print file paths to write but do no computation")
+    parser.add_argument('--compress', action='store_true',
+                        help="Apply compression when saving files")
     parser.add_argument('-n', type=int, default=1,
                         help="Number of parallel workers for Python multiprocessing Pool")
     args = parser.parse_args()
@@ -131,7 +136,9 @@ module exposing global variables: Sachet, REQUESTS."""
             # avoid  __init__(...) because it reads from disk (which is slow)
             # @classmethod decorator enables the below syntax, idea is from
             # https://stackoverflow.com/a/6384175
-            module.Sachet._refresh(clobber=args.clobber, dry_run=args.dry_run,
+            module.Sachet._refresh(compress=args.compress,
+                                   clobber=args.clobber,
+                                   dry_run=args.dry_run,
                                    **req)
     else:
         # parallel version
@@ -144,6 +151,7 @@ module exposing global variables: Sachet, REQUESTS."""
         import copy
         requests = copy.deepcopy(module.REQUESTS)
         for x in requests:
+            x['compress'] = args.compress
             x['clobber'] = args.clobber
             x['dry_run'] = args.dry_run
 
