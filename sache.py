@@ -10,6 +10,7 @@ from multiprocessing import Pool
 import numpy as np
 import os
 import psutil
+import re
 import sys
 
 from myutil import printmem, starstarmap
@@ -40,7 +41,13 @@ class Sache(object):
 
     @classmethod
     def _resolve_filename(cls, **kwargs):
-        return os.path.join(cls.STORE, cls.FNAME_TEMPLATE.format(**kwargs))
+        # not all keywords have to enter the filename specifier
+        # useful for big complex function calls...
+        fkws = dict()
+        named_keys = re.findall(r'\{(\S+?):[^{}]+?\}', cls.FNAME_TEMPLATE)
+        for k in named_keys:
+            fkws[k] = kwargs[k]
+        return os.path.join(cls.STORE, cls.FNAME_TEMPLATE.format(**fkws))
 
     @classmethod
     def _refresh(cls, compress=False, clobber=False, dry_run=False, **kwargs):

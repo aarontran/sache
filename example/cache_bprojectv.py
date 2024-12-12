@@ -15,7 +15,7 @@ class Sachet(Sache):
 
     @classmethod
     def _make(cls, **kwargs):
-        # required input: **kwargs same as FNAME_TEMPLATE below
+        # required input: **kwargs same as FNAME_TEMPLATE
         # required output: dict of numpy arrays
 
         runid = kwargs['runid']
